@@ -43,7 +43,13 @@ def run(teardown=False) -> None:
             load_data(
                 input_file,
                 'currencies.fact_exchange_rate',
-                columns = ['currency_source', 'currency_date', *CURRENCIES]
+                columns=['currency_source', 'currency_date', *CURRENCIES]
+            )
+        with open(f'./data/currencies-meta.csv', 'r') as input_file:
+            load_data(
+                input_file,
+                'currencies.dim_currency',
+                columns=['currency_source', 'currency_name','subunit', 'symbol']
             )
     run_queries(TRANSFORMATIONS)
 
