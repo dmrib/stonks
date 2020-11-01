@@ -7,7 +7,7 @@ from database import load_data
 from data_extraction import CURRENCIES
 from data_extraction import fetch_year_exchange_rates
 from data_extraction import unload_exchange_rates
-from sql_queries import TEARDOWN, INITIALIZE
+from sql_queries import TEARDOWN, INITIALIZE, TRANSFORMATIONS
 
 import tqdm
 
@@ -45,6 +45,7 @@ def run(teardown=False) -> None:
                 'currencies.fact_exchange_rate',
                 columns = ['currency_source', 'currency_date', *CURRENCIES]
             )
+    run_queries(TRANSFORMATIONS)
 
 
 # execute pipeline
