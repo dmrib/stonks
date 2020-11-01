@@ -78,6 +78,17 @@ CREATE TABLE IF NOT EXISTS currencies.dim_date
 );
 """
 
+CREATE_CURRENCY_DIMENSION_TABLE = \
+"""
+CREATE TABLE IF NOT EXISTS currencies.dim_currency
+(
+    currency_source TEXT,
+    currency_name   TEXT,
+    subunit         TEXT,
+    symbol          TEXT
+);
+"""
+
 
 #
 # TRANSFORMATIONS
@@ -101,6 +112,11 @@ FROM currencies.fact_exchange_rate;
 #
 # PROCEDURES
 #
-TEARDOWN        = [DROP_SCHEMA]
-INITIALIZE      = [CREATE_SCHEMA, CREATE_FACTS_TABLE, CREATE_DATE_DIMENSION_TABLE]
+INITIALIZE = [
+    CREATE_SCHEMA,
+    CREATE_FACTS_TABLE,
+    CREATE_DATE_DIMENSION_TABLE,
+    CREATE_CURRENCY_DIMENSION_TABLE
+]
+TEARDOWN = [DROP_SCHEMA]
 TRANSFORMATIONS = [TRANSFORM_DATES]
