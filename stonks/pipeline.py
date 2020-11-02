@@ -102,5 +102,7 @@ def load_final_tables() -> None:
     run_queries(TRANSFORMATIONS)
 
 
-# execute pipeline
-run(True)
+if __name__ == '__main__':
+
+    # execute pipeline
+    run(True)
