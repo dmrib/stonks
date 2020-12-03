@@ -90,6 +90,38 @@ CREATE TABLE IF NOT EXISTS currencies.dim_currency
 """
 
 
+CREATE_STOCKS_PRICE_FACT_TABLE = \
+"""
+CREATE TABLE IF NOT EXISTS currencies.fact_stock_price
+(
+    id           SERIAL PRIMARY KEY,
+    stock_symbol TEXT,
+    price_date   DATE NOT NULL,
+    open         REAL,
+    high         REAL,
+    low          REAL,
+    close        REAL,
+    volume       BIGINT
+);
+"""
+
+
+CREATE_ETF_PRICE_FACT_TABLE = \
+"""
+CREATE TABLE IF NOT EXISTS currencies.fact_etf_price
+(
+    id           SERIAL PRIMARY KEY,
+    stock_symbol TEXT,
+    price_date   DATE NOT NULL,
+    open         REAL,
+    high         REAL,
+    low          REAL,
+    close        REAL,
+    volume     BIGINT
+);
+"""
+
+
 #
 # TRANSFORMATIONS
 #
@@ -116,7 +148,9 @@ INITIALIZE = [
     CREATE_SCHEMA,
     CREATE_CURRENCY_FACTS_TABLE,
     CREATE_DATE_DIMENSION_TABLE,
-    CREATE_CURRENCY_DIMENSION_TABLE
+    CREATE_CURRENCY_DIMENSION_TABLE,
+    CREATE_STOCKS_PRICE_FACT_TABLE,
+    CREATE_ETF_PRICE_FACT_TABLE
 ]
 TEARDOWN = [DROP_SCHEMA]
 TRANSFORMATIONS = [TRANSFORM_DATES]
