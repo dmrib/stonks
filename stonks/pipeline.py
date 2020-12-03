@@ -8,11 +8,13 @@ from data_extraction import CURRENCIES
 from data_extraction import fetch_yearly_exchange_rates
 from data_extraction import unload_exchange_rates
 from sql_queries import TEARDOWN, INITIALIZE, TRANSFORMATIONS
+from utils import format_prices_data
 
+import glob
 import tqdm
 
 
-def run(teardown=False) -> None:
+def run(teardown: bool = False, format_price_files: bool = False) -> None:
     """
     Execute ETL pipeline for currency exchange rate dataset.
 
@@ -33,6 +35,15 @@ def run(teardown=False) -> None:
 
     # load currency data into final tables
     load_final_currencies_tables()
+
+    # format stocks and ETFs source files flagged: format files
+    if format_price_files:
+        format_prices_data('./data/stocks')
+        format_prices_data('./data/ETFs')
+
+    # load stocks and ETF prices final tables
+    load_final_prices_tables('stocks', 'fact_stock_price')
+    load_final_prices_tables('ETFs', 'fact_etf_price')
 
     print('\n\n🎉 Done!\n')
 
@@ -74,12 +85,12 @@ def extract_currencies_source_data() -> None:
 
 def load_final_currencies_tables() -> None:
     """
-    Loads final tables into destination database.
+    Loads final currencies tables into destination database.
 
     Returns:
         nothing.
     """
-    print('\n📦 Loading tables...\n')
+    print('\n📦 Loading currency exchange tables...\n')
 
     # load currency rate facts table
     for currency in tqdm.tqdm(CURRENCIES):
@@ -100,6 +111,40 @@ def load_final_currencies_tables() -> None:
 
     # load date dimensions table
     run_queries(TRANSFORMATIONS)
+
+
+def load_final_prices_tables(source: str, table: str) -> None:
+    """
+    Loads final stocks and ETF prices tables.
+
+    Args:
+        source: whether load from 'stocks' or 'ETFs' folder
+        table:  destination table name
+
+    Returns:
+        nothing.
+    """
+    print(f'\n📦 Loading {source} prices tables...\n')
+
+    # get stocks prices source files paths
+    stock_files = glob.glob(f'./data/{source}/*.txt')
+
+    # load stocks prices data to database
+    for stock_file in tqdm.tqdm(stock_files):
+        with open(stock_file, 'r') as input_file:
+            load_data(
+                input_file,
+                f'currencies.{table}',
+                columns=[
+                    'stock_symbol',
+                    'price_date',
+                    'open',
+                    'high',
+                    'low',
+                    'close',
+                    'volume'
+                ]
+            )
 
 
 if __name__ == '__main__':
