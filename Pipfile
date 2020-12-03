@@ -9,6 +9,7 @@ verify_ssl = true
 requests = "*"
 tqdm = "*"
 psycopg2-binary = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.8"
