@@ -19,9 +19,9 @@ CURRENCIES = sorted([
 ])
 
 
-def fetch_year_exchange_rates(base: str, year: int) -> typing.Optional[str]:
+def fetch_yearly_exchange_rates(base: str, year: int) -> typing.Optional[str]:
     """
-    Fetches the year exchanges rates for a given base currency.
+    Fetches the yearly exchanges rates for a given base currency.
 
     Args:
         base: base currency abbreviation (e.g. EUR, USD, BRL)
@@ -33,18 +33,32 @@ def fetch_year_exchange_rates(base: str, year: int) -> typing.Optional[str]:
     # get todays date as string
     today = datetime.today().strftime('%Y-%m-%d')
 
-    # make request to exchanges rates API
-    try:
-        response = requests.get(
-            f'{CURRENCY_API_URL}/'
-            f'history?start_at={year}-01-01&end_at={today}&base={base}'
-        )
-        response.raise_for_status()
+    # set currency data is fetched flag
+    fetched = False
 
-    # error on request: log and re-raise
-    except  HTTPError as  e:
-        print(e, f'\n\nFailed fetching data for year {year} ⚠️')
-        raise
+    # get currency data
+    while not fetched:
+
+        # make request to exchanges rates API
+        try:
+            response = requests.get(
+                f'{CURRENCY_API_URL}/'
+                f'history?start_at={year}-01-01&end_at={today}&base={base}'
+            )
+            response.raise_for_status()
+            fetched = True
+
+        # error on request: log and re-raise
+        except HTTPError as e:
+
+            # no currencies exchange for given year, try next
+            if e.response.status_code == 400:
+                year += 1
+
+            # unknown error: log and abort
+            else:
+                print(e, f'\n\nFailed fetching data for year {year} ⚠️')
+                raise
 
     # request successful: return fetched data
     return json.loads(response.content.decode('utf-8'))
