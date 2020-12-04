@@ -8,18 +8,24 @@ from data_extraction import CURRENCIES
 from data_extraction import fetch_yearly_exchange_rates
 from data_extraction import unload_exchange_rates
 from sql_queries import TEARDOWN, INITIALIZE, TRANSFORMATIONS
+from utils import format_commodities_data
 from utils import format_prices_data
 
 import glob
 import tqdm
 
 
-def run(teardown: bool = False, format_price_files: bool = False) -> None:
+def run(teardown: bool = False,
+        format_price_files: bool = False,
+        format_commodities_files: bool = False) -> None:
     """
     Execute ETL pipeline for currency exchange rate dataset.
 
     Args:
         teardown: whether existing schema should be dropped
+        format_price_files: whether price source files should be formatted
+        format_commodities_files: whether commodities  files should be formatted
+
     Returns:
         nothing.
     """
@@ -44,6 +50,15 @@ def run(teardown: bool = False, format_price_files: bool = False) -> None:
     # load stocks and ETF prices final tables
     load_final_prices_tables('stocks', 'fact_stock_price')
     load_final_prices_tables('ETFs', 'fact_etf_price')
+
+    # format commodities data is flagged: format files
+    if format_commodities_files:
+        format_commodities_data(
+            './data/commodities/commodity_trade_statistics.csv'
+        )
+
+    # load commodities trade stats data
+    load_final_commodities_tables()
 
     print('\n\n🎉 Done!\n')
 
@@ -90,7 +105,7 @@ def load_final_currencies_tables() -> None:
     Returns:
         nothing.
     """
-    print('\n📦 Loading currency exchange tables...\n')
+    print('\n\n📦 Loading currency exchange tables...\n')
 
     # load currency rate facts table
     for currency in tqdm.tqdm(CURRENCIES):
@@ -124,7 +139,7 @@ def load_final_prices_tables(source: str, table: str) -> None:
     Returns:
         nothing.
     """
-    print(f'\n📦 Loading {source} prices tables...\n')
+    print(f'\n\n📦 Loading {source} prices tables...\n')
 
     # get stocks prices source files paths
     stock_files = glob.glob(f'./data/{source}/*.txt')
@@ -147,7 +162,43 @@ def load_final_prices_tables(source: str, table: str) -> None:
             )
 
 
+def load_final_commodities_tables() -> None:
+    """
+    Loads final commodities fact and dimensions table.
+
+    Returns:
+        nothing.
+    """
+    print(f'\n\n📦 Loading commodities trade tables...\n')
+
+    with open('./data/commodities/commodities-fact.csv', 'r') as input_file:
+        load_data(
+            input_file,
+            f'currencies.fact_commodities_stats',
+            columns=[
+                'country_or_area',
+                'year',
+                'comm_code',
+                'flow',
+                'trade_usd',
+                'weight_kg',
+                'quantity'
+            ]
+        )
+
+    with open('./data/commodities/commodities-dim.csv', 'r') as input_file:
+        load_data(
+            input_file,
+            f'currencies.dim_commodity',
+            columns=[
+                'comm_code',
+                'commodity',
+                'quantity_name',
+                'category'
+            ]
+        )
+
 if __name__ == '__main__':
 
     # execute pipeline
-    run(True)
+    run(True, False, False)
