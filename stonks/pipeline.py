@@ -4,12 +4,12 @@ ETL pipeline for currency exchange rate dataset.
 
 from database import run_queries
 from database import load_data
-from data_extraction import CURRENCIES
-from data_extraction import fetch_yearly_exchange_rates
-from data_extraction import unload_exchange_rates
+from extraction import CURRENCIES
+from extraction import fetch_yearly_exchange_rates
+from extraction import unload_exchange_rates
 from sql_queries import TEARDOWN, INITIALIZE, TRANSFORMATIONS
-from utils import format_commodities_data
-from utils import format_prices_data
+from formatters import format_commodities_data
+from formatters import format_prices_data
 
 import glob
 import tqdm
