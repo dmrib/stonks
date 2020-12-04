@@ -117,7 +117,35 @@ CREATE TABLE IF NOT EXISTS currencies.fact_etf_price
     high         REAL,
     low          REAL,
     close        REAL,
-    volume     BIGINT
+    volume       BIGINT
+);
+"""
+
+
+CREATE_COMMODITIES_STATS_FACT_TABLE = \
+"""
+CREATE TABLE IF NOT EXISTS currencies.fact_commodities_stats
+(
+    id              SERIAL PRIMARY KEY,
+    country_or_area TEXT,
+    year            INT,
+    comm_code       TEXT,
+    flow            TEXT,
+    trade_usd       REAL,
+    weight_kg       REAL,
+    quantity        REAL
+);
+"""
+
+
+CREATE_COMMODITY_DIMENSION_TABLE = \
+"""
+CREATE TABLE IF NOT EXISTS currencies.dim_commodity
+(
+    comm_code       TEXT NOT NULL,
+    commodity       TEXT,
+    quantity_name   TEXT,
+    category        TEXT
 );
 """
 
@@ -150,7 +178,9 @@ INITIALIZE = [
     CREATE_DATE_DIMENSION_TABLE,
     CREATE_CURRENCY_DIMENSION_TABLE,
     CREATE_STOCKS_PRICE_FACT_TABLE,
-    CREATE_ETF_PRICE_FACT_TABLE
+    CREATE_ETF_PRICE_FACT_TABLE,
+    CREATE_COMMODITIES_STATS_FACT_TABLE,
+    CREATE_COMMODITY_DIMENSION_TABLE
 ]
 TEARDOWN = [DROP_SCHEMA]
 TRANSFORMATIONS = [TRANSFORM_DATES]

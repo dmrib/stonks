@@ -60,7 +60,7 @@ def format_prices_data(path: str) -> None:
     Returns:
         nothing.
     """
-    print(f'\n📦 Formatting {path.split("/")[-1]} source files...\n')
+    print(f'\n📇 Formatting {path.split("/")[-1]} source files...\n')
 
     # load stocks prices table
     stock_files = glob.glob(f'{path}/*.txt')
@@ -70,6 +70,60 @@ def format_prices_data(path: str) -> None:
         format_prices_source(stock_file)
 
 
+def format_commodities_data(path: str) -> None:
+    """
+    Formats source file of commodities data.
+
+    Args:
+        path: path to source data file
+
+    Returns:
+        nothing.
+    """
+    print(f'\n📇 Formatting commodities data...\n')
+
+    # load commodities data
+    stats = pd.read_csv(path, low_memory=False)
+
+    # remove commas from string columns
+    stats['country_or_area'] = \
+        stats['country_or_area'].str.replace(',', '-')
+    stats['commodity'] = \
+        stats['commodity'].str.replace(',', '-')
+
+    # split fact and dimensions data
+    facts = stats[[
+        'country_or_area',
+        'year',
+        'comm_code',
+        'flow',
+        'trade_usd',
+        'weight_kg',
+        'quantity'
+    ]]
+    dimensions = stats[[
+        'comm_code',
+        'commodity',
+        'quantity_name',
+        'category'
+    ]].drop_duplicates()
+
+    # unload data
+    facts.to_csv(
+        './data/commodities/commodities-fact.csv',
+        index=False,
+        sep=',',
+        na_rep='',
+        header=False
+    )
+    dimensions.to_csv(
+        './data/commodities/commodities-dim.csv',
+        index=False,
+        sep=',',
+        na_rep='',
+        header=False
+    )
+
+
 if __name__ == '__main__':
-    format_prices_data('./data/stocks')
-    format_prices_data('./data/ETFs')
+    format_commodities_data('./data/commodities/commodity_trade_statistics.csv')
