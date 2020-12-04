@@ -63,7 +63,7 @@ def load_data(file: str, table: str, columns: typing.List[str]) -> None:
     cursor, connection = get_cursor()
 
     # copy data into table
-    cursor.copy_from(file, table, columns=columns, sep=',')
+    cursor.copy_from(file, table, columns=columns, sep=',', null="")
 
     # close database connection
     connection.close()
