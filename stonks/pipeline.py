@@ -3,12 +3,13 @@ ETL pipeline for currency exchange rate dataset.
 """
 
 from checks import check_for_minimum_rows
+from checks import check_static_file_is_fully_loaded
 from database import run_queries
 from database import load_data
 from extraction import CURRENCIES
 from extraction import fetch_yearly_exchange_rates
 from extraction import unload_exchange_rates
-from sql_queries import TEARDOWN, INITIALIZE, TRANSFORM_DATES, CHECK_FOR_MINIMUM
+from sql_queries import TEARDOWN, INITIALIZE, TRANSFORM_DATES, FETCH_ROWS, FETCH_ALL
 from formatters import format_commodities_data
 from formatters import format_prices_data
 
@@ -76,7 +77,13 @@ def run(teardown: bool = False,
     load_derived_tables()
 
     # check tables data quality
-    check_for_minimum_rows(CHECK_FOR_MINIMUM, 10, TABLES)
+    check_for_minimum_rows(FETCH_ROWS, 10, TABLES)
+    check_static_file_is_fully_loaded(
+        FETCH_ALL,
+        33,
+        ['currencies.dim_currency']
+    )
+
 
     print('\n\n🎉 Done!\n')
 
