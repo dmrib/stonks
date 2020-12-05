@@ -34,6 +34,7 @@ def run_queries(queries: typing.List[str]) -> None:
 
     Args:
         query: list of query strings to be executed
+
     Returns:
         nothing.
     """
@@ -48,6 +49,31 @@ def run_queries(queries: typing.List[str]) -> None:
     connection.close()
 
 
+def get_values(query: str) -> typing.List[typing.Any]:
+    """
+    Execute query and return result.
+
+    Args:
+        query: query to be executed
+
+    Returns:
+        list of result values.
+    """
+    # get database connection and cursor
+    cursor, connection = get_cursor()
+
+    # execute query
+    cursor.execute(query)
+
+    # fetch query result
+    result = cursor.fetchall()
+
+    # close database connection
+    connection.close()
+
+    return result
+
+
 def load_data(file: str, table: str, columns: typing.List[str]) -> None:
     """
     Loads CSV files in batches to PostgreSQL table.
@@ -56,6 +82,7 @@ def load_data(file: str, table: str, columns: typing.List[str]) -> None:
         file: path to source CSV file
         table: name of destination table
         columns: list of columns to be derived in order from source file
+
     Returns:
         nothing.
     """
