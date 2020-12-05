@@ -170,6 +170,17 @@ FROM currencies.fact_exchange_rate;
 
 
 #
+# DATA INTEGRITY CHECKS
+#
+CHECK_FOR_MINIMUM =  \
+"""
+SELECT *
+FROM {table}
+LIMIT {min};
+"""
+
+
+#
 # PROCEDURES
 #
 INITIALIZE = [
