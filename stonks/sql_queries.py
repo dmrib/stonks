@@ -82,7 +82,7 @@ CREATE_CURRENCY_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_currency
 (
-    currency_source TEXT NOT NULL,
+    currency_source TEXT PRIMARY KEY,
     currency_name   TEXT NOT NULL,
     subunit         TEXT,
     symbol          TEXT
@@ -142,7 +142,7 @@ CREATE_COMMODITY_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_commodity
 (
-    comm_code       TEXT NOT NULL,
+    comm_code       TEXT PRIMARY KEY,
     commodity       TEXT,
     quantity_name   TEXT,
     category        TEXT
