@@ -67,7 +67,7 @@ CREATE_DATE_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_date
 (
-    currency_date DATE PRIMARY KEY,
+    register_date DATE PRIMARY KEY,
     day           INT,
     week          INT,
     month         INT,
@@ -173,13 +173,18 @@ ON CONFLICT DO NOTHING;
 #
 # DATA INTEGRITY CHECKS
 #
-CHECK_FOR_MINIMUM =  \
+FETCH_ROWS =  \
 """
 SELECT *
 FROM {table}
 LIMIT {min};
 """
 
+FETCH_ALL = \
+"""
+SELECT *
+FROM {table}
+"""
 
 #
 # PROCEDURES
