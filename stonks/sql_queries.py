@@ -67,7 +67,7 @@ CREATE_DATE_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_date
 (
-    currency_date DATE,
+    register_date DATE PRIMARY KEY,
     day           INT,
     week          INT,
     month         INT,
@@ -82,8 +82,8 @@ CREATE_CURRENCY_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_currency
 (
-    currency_source TEXT,
-    currency_name   TEXT,
+    currency_source TEXT PRIMARY KEY,
+    currency_name   TEXT NOT NULL,
     subunit         TEXT,
     symbol          TEXT
 );
@@ -95,7 +95,7 @@ CREATE_STOCKS_PRICE_FACT_TABLE = \
 CREATE TABLE IF NOT EXISTS currencies.fact_stock_price
 (
     id           SERIAL PRIMARY KEY,
-    stock_symbol TEXT,
+    stock_symbol TEXT NOT NULL,
     price_date   DATE NOT NULL,
     open         REAL,
     high         REAL,
@@ -142,7 +142,7 @@ CREATE_COMMODITY_DIMENSION_TABLE = \
 """
 CREATE TABLE IF NOT EXISTS currencies.dim_commodity
 (
-    comm_code       TEXT NOT NULL,
+    comm_code       TEXT PRIMARY KEY,
     commodity       TEXT,
     quantity_name   TEXT,
     category        TEXT
@@ -155,30 +155,36 @@ CREATE TABLE IF NOT EXISTS currencies.dim_commodity
 #
 TRANSFORM_DATES = \
 """
-INSERT INTO currencies.dim_date
+INSERT INTO currencies.{dim_table}
 SELECT DISTINCT
-       currency_date,
-       EXTRACT(DAY FROM currency_date) AS day,
-       EXTRACT(WEEK FROM currency_date) AS week,
-       EXTRACT(MONTH FROM currency_date) AS month,
-       EXTRACT(YEAR FROM currency_date) AS year,
-       EXTRACT(QUARTER FROM currency_date) AS quarter,
-       EXTRACT(DOW FROM currency_date) AS day_of_week,
-       EXTRACT(DOY FROM currency_date) AS day_of_year
-FROM currencies.fact_exchange_rate;
+       {date_column},
+       EXTRACT(DAY FROM {date_column}) AS day,
+       EXTRACT(WEEK FROM {date_column}) AS week,
+       EXTRACT(MONTH FROM {date_column}) AS month,
+       EXTRACT(YEAR FROM {date_column}) AS year,
+       EXTRACT(QUARTER FROM {date_column}) AS quarter,
+       EXTRACT(DOW FROM {date_column}) AS day_of_week,
+       EXTRACT(DOY FROM {date_column}) AS day_of_year
+FROM currencies.{fact_table}
+ON CONFLICT DO NOTHING;
 """
 
 
 #
 # DATA INTEGRITY CHECKS
 #
-CHECK_FOR_MINIMUM =  \
+FETCH_ROWS =  \
 """
 SELECT *
 FROM {table}
 LIMIT {min};
 """
 
+FETCH_ALL = \
+"""
+SELECT *
+FROM {table}
+"""
 
 #
 # PROCEDURES
@@ -194,4 +200,3 @@ INITIALIZE = [
     CREATE_COMMODITY_DIMENSION_TABLE
 ]
 TEARDOWN = [DROP_SCHEMA]
-TRANSFORMATIONS = [TRANSFORM_DATES]

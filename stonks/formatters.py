@@ -106,7 +106,7 @@ def format_commodities_data(path: str) -> None:
         'commodity',
         'quantity_name',
         'category'
-    ]].drop_duplicates()
+    ]].drop_duplicates(subset=['comm_code'])
 
     # unload data
     facts.to_csv(

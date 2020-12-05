@@ -3,12 +3,13 @@ ETL pipeline for currency exchange rate dataset.
 """
 
 from checks import check_for_minimum_rows
+from checks import check_static_file_is_fully_loaded
 from database import run_queries
 from database import load_data
 from extraction import CURRENCIES
 from extraction import fetch_yearly_exchange_rates
 from extraction import unload_exchange_rates
-from sql_queries import TEARDOWN, INITIALIZE, TRANSFORMATIONS, CHECK_FOR_MINIMUM
+from sql_queries import TEARDOWN, INITIALIZE, TRANSFORM_DATES, FETCH_ROWS, FETCH_ALL
 from formatters import format_commodities_data
 from formatters import format_prices_data
 
@@ -72,8 +73,17 @@ def run(teardown: bool = False,
     # load commodities trade stats data
     load_final_commodities_tables()
 
+    # run transformations
+    load_derived_tables()
+
     # check tables data quality
-    check_for_minimum_rows(CHECK_FOR_MINIMUM, 10, TABLES)
+    check_for_minimum_rows(FETCH_ROWS, 10, TABLES)
+    check_static_file_is_fully_loaded(
+        FETCH_ALL,
+        33,
+        ['currencies.dim_currency']
+    )
+
 
     print('\n\n🎉 Done!\n')
 
@@ -139,9 +149,6 @@ def load_final_currencies_tables() -> None:
             columns=['currency_source', 'currency_name','subunit', 'symbol']
         )
 
-    # load date dimensions table
-    run_queries(TRANSFORMATIONS)
-
 
 def load_final_prices_tables(source: str, table: str) -> None:
     """
@@ -175,6 +182,40 @@ def load_final_prices_tables(source: str, table: str) -> None:
                     'volume'
                 ]
             )
+
+
+def load_derived_tables() -> None:
+    """
+    Loads derived tables data.
+
+    Returns:
+        nothing.
+    """
+    print(f'\n\n📦 Loading derived tables...\n')
+
+    # render transform from currencies dates
+    currencies = TRANSFORM_DATES.format(
+        dim_table='dim_date',
+        date_column='currency_date',
+        fact_table='fact_exchange_rate'
+    )
+
+    # render transform from stock prices dates
+    stocks = TRANSFORM_DATES.format(
+        dim_table='dim_date',
+        date_column='price_date',
+        fact_table='fact_stock_price'
+    )
+
+    # render tranform from ETF prices dates
+    etf = TRANSFORM_DATES.format(
+        dim_table='dim_date',
+        date_column='price_date',
+        fact_table='fact_etf_price'
+    )
+
+    # load derived tables
+    run_queries([currencies, stocks, etf])
 
 
 def load_final_commodities_tables() -> None:
